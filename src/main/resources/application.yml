@@ -1,0 +1,34 @@
+info:
+  component: Config Samples
+endpoints:
+  restart:
+    enabled: true
+logging:
+  levels:
+    org.springframework: DEBUG
+management:
+  security:
+    enabled: false
+spring:
+  application:
+    name: composite
+  cloud:
+    config:
+      server:
+        composite:
+          -
+            type: git
+            uri: https://github.com/ojhughes/config-source-1
+          -
+            type: vault
+            uri: http://scs-vault.af.pivotal.io:8200
+            host: scs-vault.af.pivotal.io
+            scheme: http
+            port: 8200
+          -
+            type: git
+            uri: https://github.com/ojhughes/config-source-1
+  profiles:
+    active: vault, git
+server:
+  port: 8888
