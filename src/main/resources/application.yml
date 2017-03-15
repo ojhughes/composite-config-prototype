@@ -19,6 +19,10 @@ spring:
           -
             type: git
             uri: https://github.com/ojhughes/config-source-1
+            searchPaths: foo,bar
+            repos:
+              dev:
+                pattern: dev,stage
           -
             type: vault
             uri: http://scs-vault.af.pivotal.io:8200
