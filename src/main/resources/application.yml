@@ -31,7 +31,7 @@ spring:
             port: 8200
           -
             type: git
-            uri: https://github.com/ojhughes/config-source-1
+            uri: https://github.com/ojhughes/config-source-2
   profiles:
     active: vault, git
 server:

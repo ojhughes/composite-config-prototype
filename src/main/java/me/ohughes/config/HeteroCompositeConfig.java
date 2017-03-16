@@ -75,7 +75,7 @@ public class HeteroCompositeConfig {
 
     private EnvironmentRepository convertPropertiesToVaultEnvironment(HttpServletRequest request, HeteroCompositeProperties configProperties) {
         EnvironmentRepository vaultEnv = new VaultEnvironmentRepository(request, new EnvironmentWatch.Default(), new RestTemplate());
-        BeanUtils.copyProperties(configProperties, vaultEnv);
+        BeanUtils.copyProperties(configProperties, vaultEnv, getNullPropertyNames(configProperties));
         return vaultEnv;
     }
 
@@ -99,12 +99,17 @@ public class HeteroCompositeConfig {
         multiGitEnv.setRepos(convertedRepoMap);
         return multiGitEnv;
     }
-
-    public static String[] getNullPropertyNames (Object source) {
+    private static String[] getNullPropertyNames (Object source, String extraFields) {
+        String[] nullProps = getNullPropertyNames(source);
+        List<String> combinedWithExtraProp = Arrays.asList(getNullPropertyNames(source));
+        combinedWithExtraProp.add(extraFields);
+        return combinedWithExtraProp.toArray(new String[combinedWithExtraProp.size()]);
+    }
+    private static String[] getNullPropertyNames (Object source) {
         final BeanWrapper src = new BeanWrapperImpl(source);
         java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
 
-        Set<String> emptyNames = new HashSet<String>();
+        Set<String> emptyNames = new HashSet<>();
         for(java.beans.PropertyDescriptor pd : pds) {
             Object srcValue = src.getPropertyValue(pd.getName());
             if (srcValue == null) emptyNames.add(pd.getName());

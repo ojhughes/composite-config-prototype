@@ -23,14 +23,12 @@ public class HeteroCompositeEnvironmentRepository implements EnvironmentReposito
 
     @Override
     public Environment findOne(String application, String profile, String label) {
+        Environment compositeEnvironment = new Environment("composite", new String[]{profile}, label, null,null);
         for (EnvironmentRepository repo : environmentRepositories) {
+
             Environment source = repo.findOne(application, profile, label);
-            log.info(source.toString());
-            source.getPropertySources().forEach(ps -> log.info("{}: {}",source.getName(), ps.toString()));
-            if(source.getPropertySources().size() > 0){
-                return source;
-            }
+            source.getPropertySources().forEach(compositeEnvironment::add);
         }
-        return null;
+        return compositeEnvironment;
     }
 }
