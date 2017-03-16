@@ -3,7 +3,10 @@ package me.ohughes.config;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.constraints.Pattern;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,11 +18,13 @@ import java.util.Map;
 @ConfigurationProperties("spring.cloud.config.server")
 public class CompositeProperties {
 
-    private List<HeteroCompositeProperties> composite;
+    private List<HeteroCompositeProperties> composite = new ArrayList<>();
 
     @Data
+    @Validated
     @EqualsAndHashCode(callSuper = true)
     public static class HeteroCompositeProperties extends GitRepoProperties {
+        @Pattern(regexp = "vault|git")
         private String type;
         private String host;
         private String scheme;
@@ -31,7 +36,7 @@ public class CompositeProperties {
     }
 
     @Data
-    public static class GitRepoProperties{
+    public static class GitRepoProperties {
         private boolean cloneOnStart;
         private boolean forcePull;
         private String uri;
