@@ -21,9 +21,11 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.beans.FeatureDescriptor;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Setup appropriate environment repositories based on what is listed in the composite config key
@@ -48,8 +50,8 @@ public class HeteroCompositeConfig {
         }
     }
     @Bean
-    public EnvironmentRepository masterCompositeRepository(){
-        return new HeteroCompositeEnvironmentRepository();
+    public EnvironmentRepository masterCompositeRepository(List<EnvironmentRepository> compositeEnvironments){
+        return new HeteroCompositeEnvironmentRepository(compositeEnvironments);
     }
 
     @Bean
@@ -84,12 +86,13 @@ public class HeteroCompositeConfig {
         Map<String, PatternMatchingJGitEnvironmentRepository> convertedRepoMap = new LinkedHashMap<>();
         BeanUtils.copyProperties(configProperties, multiGitEnv, "repos");
 
-        //Map properties for each set of nested git repositories individually
+        //Guard against null value for repos map
         Set<Entry<String, PatternMatchingRepoProperties>> extraRepoProperties = Optional
                 .ofNullable(configProperties.getRepos())
                 .map(Map::entrySet)
                 .orElse(Collections.emptySet());
 
+        //Map properties for each set of nested git repositories individually
         for (Entry<String, PatternMatchingRepoProperties> patternRepoEntry : extraRepoProperties){
             PatternMatchingJGitEnvironmentRepository patternMatchingRepo = new PatternMatchingJGitEnvironmentRepository();
             patternMatchingRepo.setName(patternRepoEntry.getKey());
@@ -99,24 +102,12 @@ public class HeteroCompositeConfig {
         multiGitEnv.setRepos(convertedRepoMap);
         return multiGitEnv;
     }
-    private static String[] getNullPropertyNames (Object source, String extraFields) {
-        String[] nullProps = getNullPropertyNames(source);
-        List<String> combinedWithExtraProp = Arrays.asList(getNullPropertyNames(source));
-        combinedWithExtraProp.add(extraFields);
-        return combinedWithExtraProp.toArray(new String[combinedWithExtraProp.size()]);
-    }
+
     private static String[] getNullPropertyNames (Object source) {
-        final BeanWrapper src = new BeanWrapperImpl(source);
-        java.beans.PropertyDescriptor[] pds = src.getPropertyDescriptors();
-
-        Set<String> emptyNames = new HashSet<>();
-        for(java.beans.PropertyDescriptor pd : pds) {
-            Object srcValue = src.getPropertyValue(pd.getName());
-            if (srcValue == null) emptyNames.add(pd.getName());
-        }
-        String[] result = new String[emptyNames.size()];
-        return emptyNames.toArray(result);
+        final BeanWrapper wrappedSource = new BeanWrapperImpl(source);
+        return Stream.of(wrappedSource.getPropertyDescriptors())
+                .map(FeatureDescriptor::getName)
+                .filter(propertyName -> wrappedSource.getPropertyValue(propertyName) == null)
+                .toArray(String[]::new);
     }
-    //TODO: for each environment in the list, create an environment repository of the given type
-
 }

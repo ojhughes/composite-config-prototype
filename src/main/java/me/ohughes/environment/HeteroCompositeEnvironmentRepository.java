@@ -1,14 +1,14 @@
 package me.ohughes.environment;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.config.environment.Environment;
+import org.springframework.cloud.config.environment.PropertySource;
 import org.springframework.cloud.config.server.environment.EnvironmentRepository;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
-import java.util.List;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Master environment repository that searches for a config value
@@ -16,19 +16,43 @@ import java.util.List;
  */
 @Slf4j
 @Data
+@AllArgsConstructor
 public class HeteroCompositeEnvironmentRepository implements EnvironmentRepository {
 
-    @Resource
     private List<EnvironmentRepository> environmentRepositories;
 
     @Override
     public Environment findOne(String application, String profile, String label) {
         Environment compositeEnvironment = new Environment("composite", new String[]{profile}, label, null,null);
+
+        Set<Object> foundKeys = new HashSet<>();
         for (EnvironmentRepository repo : environmentRepositories) {
 
-            Environment source = repo.findOne(application, profile, label);
-            source.getPropertySources().forEach(compositeEnvironment::add);
+            Environment env = repo.findOne(application, profile, label);
+            //Each environment repository has a set of key/value properties. Deduplicate the property values
+            //so only the first found is returned to the client.
+            for(PropertySource source : env.getPropertySources()) {
+                Map<Object, Object> newSourceMap = deduplicatePropertySource(foundKeys, source);
+                compositeEnvironment.add(new PropertySource(source.getName(), newSourceMap));
+            }
         }
         return compositeEnvironment;
+    }
+
+    private Map<Object, Object> deduplicatePropertySource(Set<Object> foundKeys, PropertySource source) {
+        //Guard against null value for repos map
+        Set<? extends Entry<?, ?>> sourceValueCollection = Optional
+                .ofNullable(source.getSource())
+                .map(Map::entrySet)
+                .orElse(Collections.emptySet());
+
+        Map<Object, Object> newSourceMap = new HashMap<>();
+        for(Entry<?, ?> sourceValueEntry : sourceValueCollection){
+            if(!foundKeys.contains(sourceValueEntry.getKey())){
+                newSourceMap.put(sourceValueEntry.getKey(), sourceValueEntry.getValue());
+                foundKeys.add(sourceValueEntry.getKey());
+            }
+        }
+        return newSourceMap;
     }
 }
