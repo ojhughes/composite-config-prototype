@@ -8,6 +8,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.config.server.environment.EnvironmentRepository;
 import org.springframework.cloud.config.server.environment.EnvironmentWatch;
@@ -17,6 +18,9 @@ import org.springframework.cloud.config.server.environment.VaultEnvironmentRepos
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.expression.Expression;
+import org.springframework.expression.ExpressionParser;
+import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -44,17 +48,21 @@ public class HeteroCompositeConfig {
 
     @PostConstruct
     public void init() {
+        ExpressionParser spelParser = new SpelExpressionParser();
+        Expression expression = spelParser.parseExpression("'${spring.cloud.config.server.composite:}'");
         for (HeteroCompositeProperties environment: compositeProperties.getComposite()) {
             log.info(environment.toString());
 
         }
     }
     @Bean
+    @ConditionalOnProperty(prefix = "spring.cloud.config.server", value = "composite")
     public EnvironmentRepository masterCompositeRepository(List<EnvironmentRepository> compositeEnvironments){
         return new HeteroCompositeEnvironmentRepository(compositeEnvironments);
     }
 
     @Bean
+    @ConditionalOnProperty(prefix = "spring.cloud.config.server", value = "composite")
     public List<EnvironmentRepository> compositeEnvironments(ConfigurableEnvironment environment, HttpServletRequest request){
         List<EnvironmentRepository> environments = new ArrayList<>();
 
