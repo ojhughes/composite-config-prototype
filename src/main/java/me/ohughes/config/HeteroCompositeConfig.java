@@ -18,9 +18,6 @@ import org.springframework.cloud.config.server.environment.VaultEnvironmentRepos
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.expression.Expression;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
@@ -48,8 +45,6 @@ public class HeteroCompositeConfig {
 
     @PostConstruct
     public void init() {
-        ExpressionParser spelParser = new SpelExpressionParser();
-        Expression expression = spelParser.parseExpression("'${spring.cloud.config.server.composite:}'");
         for (HeteroCompositeProperties environment: compositeProperties.getComposite()) {
             log.info(environment.toString());
 
