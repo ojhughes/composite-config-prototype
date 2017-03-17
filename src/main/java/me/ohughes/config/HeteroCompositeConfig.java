@@ -118,4 +118,19 @@ public class HeteroCompositeConfig {
                 .filter(propertyName -> wrappedSource.getPropertyValue(propertyName) == null)
                 .toArray(String[]::new);
     }
+
+    public enum EnvironmentType {
+        GIT("git"),
+        VAULT("vault");
+
+        private String type;
+
+        EnvironmentType(String type) {
+            this.type = type;
+        }
+
+        public String getType() {
+            return type;
+        }
+    }
 }
