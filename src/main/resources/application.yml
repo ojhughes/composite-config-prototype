@@ -16,7 +16,7 @@ spring:
     config:
       server:
         git:
-          uri: https://proxyuser:proxypassword@github.com/ojhughes/config-source-2
+          uri: https://github.com/ojhughes/config-source-2
           proxy:
             http:
               host: proxy-noauth.rgb.springapps.io
