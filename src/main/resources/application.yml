@@ -15,24 +15,21 @@ spring:
   cloud:
     config:
       server:
-        composite:
-          -
-            type: git
-            uri: https://github.com/ojhughes/config-source-1
-            searchPaths: foo,bar
-            repos:
-              dev:
-                pattern: dev,stage
-          -
-            type: vault
-            uri: http://scs-vault.af.pivotal.io:8200
-            host: scs-vault.af.pivotal.io
-            scheme: http
-            port: 8200
-          -
-            type: git
-            uri: https://github.com/ojhughes/config-source-2
+        git:
+          uri: https://proxyuser:proxypassword@github.com/ojhughes/config-source-2
+          proxy:
+            http:
+              host: proxy-noauth.rgb.springapps.io
+              port: 3128
+              username: proxyuser
+              password: proxypassword
+            https:
+              host: proxy-auth.rgb.springapps.io
+              port: 3128
+              username: proxyuser
+              password: proxypassword
+          clone-on-start: true
   profiles:
-    active: vault, git
+    active: git
 server:
   port: 8888
