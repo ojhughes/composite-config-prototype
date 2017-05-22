@@ -11,6 +11,7 @@ management:
     enabled: false
 spring:
   application:
+
     name: composite
   cloud:
     config:
@@ -18,21 +19,32 @@ spring:
         composite:
           -
             type: git
-            uri: https://github.com/ojhughes/config-source-1
-            searchPaths: foo,bar
+            uri: https://github.com/pivotal-cf/p-spring-cloud-services-acceptance
+            label: master
+            username: cf-spring-cloud-services@pivotal.io
+            password: tXJ3NyBe7zazPJ2L9S6USNAWQ
+            searchPaths: config-default
+            cloneOnStart: true
             repos:
-              dev:
-                pattern: dev,stage
+              app1:
+                uri: https://github.com/pivotal-cf/p-spring-cloud-services-acceptance
+                pattern: nextlines*/*
+                searchPath: config-app1
+                username: cf-spring-cloud-services@pivotal.io
+                password: tXJ3NyBe7zazPJ2L9S6USNAWQ
+                defaultLabel: master
           -
             type: vault
             uri: http://scs-vault.af.pivotal.io:8200
             host: scs-vault.af.pivotal.io
             scheme: http
             port: 8200
-          -
-            type: git
-            uri: https://github.com/ojhughes/config-source-2
+            defaultKey: game
+#        git:
+#          uri: http://fixme.com
   profiles:
-    active: vault, git
+    active: default
 server:
   port: 8888
+debug: true
+

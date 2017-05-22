@@ -5,7 +5,10 @@ buildscript {
     }
     repositories {
         mavenCentral()
-        maven { url 'http://repo.spring.io/plugins-release' }
+        maven {
+            url 'http://repo.spring.io/plugins-release' 
+        }
+
     }
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
@@ -36,13 +39,27 @@ sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
 repositories {
+    mavenLocal()
     mavenCentral()
+    maven {
+        url "https://repo.eclipse.org/content/groups/releases"
+    }
 }
 
 dependencies {
     provided("org.projectlombok:lombok:${lombokVersion}")
     compile('org.springframework.cloud:spring-cloud-config-server')
     compile("org.springframework.boot:spring-boot-devtools")
+    compile("org.eclipse.jgit:org.eclipse.jgit:4.6.1.201703071140-r"){
+        exclude group: "org.slf4j"
+
+    }
+    compile("org.eclipse.jgit.feature:org.eclipse.jgit.http.apache:4.6.1.201703071140-r"){
+        exclude group: "org.slf4j"
+
+    }
+//    compile "org.slf4j:slf4j-api:1.7.5"
+//    compile "org.slf4j:slf4j-log4j12:1.7.5"
     optional("org.springframework.boot:spring-boot-configuration-processor")
     testCompile("org.springframework.boot:spring-boot-starter-test")
 
@@ -51,7 +68,7 @@ compileJava.dependsOn(processResources)
 
 dependencyManagement {
     imports {
-        mavenBom "org.springframework.cloud:spring-cloud-dependencies:Camden.SR6"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:Dalston.RELEASE"
     }
 }
 

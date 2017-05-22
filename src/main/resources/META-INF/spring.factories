@@ -1,0 +1,3 @@
+# Autoconfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+me.ohughes.composite.CompositeAutoConfiguration
